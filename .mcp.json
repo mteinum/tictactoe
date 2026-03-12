@@ -4,7 +4,7 @@
       "type": "stdio",
       "command": "./run_server.sh",
       "env": {
-        "TTT_SERVER": "erlang"
+        "TTT_SERVER": "elixir"
       }
     }
   }
