@@ -2,20 +2,36 @@
 
 [![Build](https://github.com/mteinum/tictactoe/actions/workflows/build.yml/badge.svg)](https://github.com/mteinum/tictactoe/actions/workflows/build.yml)
 
-A Tic Tac Toe MCP (Model Context Protocol) server written in Erlang, with two Claude Code subagents that play against each other.
+A Tic Tac Toe MCP (Model Context Protocol) server with two implementations (Erlang and Elixir) and Claude Code subagents that play against each other.
 
 ## Prerequisites
 
-- Erlang/OTP (with `escript` and `rebar3`)
+- Erlang/OTP 27+
+- Elixir 1.19+ (for the Elixir implementation)
+- `rebar3` (for the Erlang implementation)
 - [Claude Code](https://claude.com/claude-code)
 
 ## Build
 
 ```bash
-rebar3 escriptize
+# Erlang
+cd erlang && rebar3 escriptize
+
+# Elixir
+cd elixir && mix deps.get && mix escript.build
 ```
 
-The escript binary is output to `_build/default/bin/teinum_tictactoe`.
+## Choosing the Server
+
+The `run_server.sh` launcher script picks the implementation via the `TTT_SERVER` environment variable (`erlang` or `elixir`, defaults to `elixir`).
+
+Set it in `.mcp.json`:
+
+```json
+{
+  "env": { "TTT_SERVER": "elixir" }
+}
+```
 
 ## MCP Server
 
@@ -45,8 +61,7 @@ Board positions are laid out as:
   "mcpServers": {
     "tictactoe": {
       "type": "stdio",
-      "command": "escript",
-      "args": ["/path/to/teinum-tictactoe/_build/default/bin/teinum_tictactoe"]
+      "command": "./run_server.sh"
     }
   }
 }
@@ -56,42 +71,43 @@ Board positions are laid out as:
 
 Two Claude Code subagents are included in `.claude/agents/` that can play against each other using the MCP server:
 
-- **player-x** -- Plays as X (always goes first). Uses Haiku for fast responses.
-- **player-o** -- Plays as O. Uses Haiku for fast responses.
+- **player-x** -- Plays as X (always goes first).
+- **player-o** -- Plays as O.
 
-Both agents share the same tictactoe MCP server instance (configured in `.mcp.json`) so they play on the same board. Each agent follows the same strategy priority:
-
-1. Win if possible
-2. Block the opponent from winning
-3. Take the center
-4. Take a corner
-5. Take a side
+Both agents share the same tictactoe MCP server instance (configured in `.mcp.json`) so they play on the same board.
 
 ### Play a game
 
-Start a Claude Code session from the project directory, then:
-
-```
-Use player-x to start a new game and make the first move,
-then use player-o to respond, and keep alternating until the game ends.
-```
+Start a Claude Code session from the project directory and use the `/play-game` skill to run a full game automatically, or manually alternate between the player agents.
 
 ## Project Structure
 
 ```
 teinum-tictactoe/
-  rebar.config                     # Build config (thoas JSON dependency)
-  .mcp.json                        # Shared MCP server config
-  .claude/agents/
-    player-x.md                    # Player X subagent
-    player-o.md                    # Player O subagent
-  src/
-    teinum_tictactoe.app.src       # OTP application descriptor
-    teinum_tictactoe.erl           # Escript entry point
-    teinum_tictactoe_app.erl       # Application behaviour
-    teinum_tictactoe_sup.erl       # Supervisor
-    ttt_game.erl                   # Game state gen_server
-    ttt_tools.erl                  # MCP tool definitions and execution
-    ttt_mcp.erl                    # JSON-RPC / MCP protocol dispatch
-    ttt_stdio.erl                  # Stdio read/write loop
+  run_server.sh                      # Launcher script (picks erlang or elixir)
+  .mcp.json                          # Shared MCP server config
+  .claude/
+    agents/
+      player-x.md                    # Player X subagent
+      player-o.md                    # Player O subagent
+    skills/
+      play-game/SKILL.md             # Skill to run a full game
+  erlang/
+    rebar.config                     # Build config (thoas JSON dependency)
+    src/
+      teinum_tictactoe.app.src       # OTP application descriptor
+      teinum_tictactoe.erl           # Escript entry point
+      teinum_tictactoe_app.erl       # Application behaviour
+      teinum_tictactoe_sup.erl       # Supervisor
+      ttt_game.erl                   # Game state gen_server
+      ttt_tools.erl                  # MCP tool definitions and execution
+      ttt_mcp.erl                    # JSON-RPC / MCP protocol dispatch
+      ttt_stdio.erl                  # Stdio read/write loop
+  elixir/
+    mix.exs                          # Build config (jason dependency)
+    lib/teinum_tictactoe_ex/
+      game.ex                        # Game state GenServer
+      tools.ex                       # MCP tool definitions and execution
+      mcp.ex                         # JSON-RPC / MCP protocol dispatch
+      stdio.ex                       # Stdio read/write loop
 ```
