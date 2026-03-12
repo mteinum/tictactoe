@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SERVER="${TTT_SERVER:-erlang}"
+SERVER="${TTT_SERVER:-elixir}"
 
 case "$SERVER" in
   erlang)
