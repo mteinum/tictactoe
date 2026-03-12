@@ -4,7 +4,7 @@
       "type": "stdio",
       "command": "escript",
       "args": [
-        "/Users/vkv7662/code/teinum-tictactoe/_build/default/bin/teinum_tictactoe"
+        "_build/default/bin/teinum_tictactoe"
       ]
     }
   }
