@@ -4,6 +4,8 @@
 
 A Tic Tac Toe MCP (Model Context Protocol) server with two implementations (Erlang and Elixir) and Claude Code subagents that play against each other.
 
+[![Watch the video](https://img.youtube.com/vi/30yI5FJB3Rc/maxresdefault.jpg)](https://youtu.be/30yI5FJB3Rc)
+
 ## Prerequisites
 
 - Erlang/OTP 27+
