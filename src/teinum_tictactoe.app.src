@@ -1,0 +1,9 @@
+{application, teinum_tictactoe, [
+    {description, "Tic Tac Toe MCP Server"},
+    {vsn, "0.1.0"},
+    {registered, []},
+    {mod, {teinum_tictactoe_app, []}},
+    {applications, [kernel, stdlib, thoas]},
+    {env, []},
+    {modules, []}
+]}.
