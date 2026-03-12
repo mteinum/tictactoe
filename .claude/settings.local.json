@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(printf:*)",
+      "mcp__tictactoe__new_game",
+      "mcp__tictactoe__get_board",
+      "mcp__tictactoe__get_status",
+      "mcp__tictactoe__make_move",
+      "Agent"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "tictactoe"
+  ]
+}
