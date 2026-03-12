@@ -1,0 +1,79 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  erlang:
+    name: Build Erlang server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: erlang
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27"
+          rebar3-version: "3.24"
+
+      - name: Restore rebar3 cache
+        uses: actions/cache@v4
+        with:
+          path: erlang/_build
+          key: erlang-build-${{ hashFiles('erlang/rebar.lock') }}
+          restore-keys: erlang-build-
+
+      - name: Compile
+        run: rebar3 compile
+
+      - name: Build escript
+        run: rebar3 escriptize
+
+      - name: Smoke test
+        run: |
+          echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+            | escript _build/default/bin/teinum_tictactoe 2>/dev/null \
+            | head -c 1000
+
+  elixir:
+    name: Build Elixir server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: elixir
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27"
+          elixir-version: "1.19"
+
+      - name: Restore Mix cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            elixir/deps
+            elixir/_build
+          key: elixir-build-${{ hashFiles('elixir/mix.lock') }}
+          restore-keys: elixir-build-
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Compile
+        run: mix compile --warnings-as-errors
+
+      - name: Build escript
+        run: mix escript.build
+
+      - name: Smoke test
+        run: |
+          echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+            | ./teinum_tictactoe_ex 2>/dev/null \
+            | head -c 1000

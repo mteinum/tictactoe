@@ -1,5 +1,7 @@
 # Teinum Tictactoe
 
+[![Build](https://github.com/mteinum/tictactoe/actions/workflows/build.yml/badge.svg)](https://github.com/mteinum/tictactoe/actions/workflows/build.yml)
+
 A Tic Tac Toe MCP (Model Context Protocol) server written in Erlang, with two Claude Code subagents that play against each other.
 
 ## Prerequisites
