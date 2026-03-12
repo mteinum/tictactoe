@@ -2,10 +2,10 @@
   "mcpServers": {
     "tictactoe": {
       "type": "stdio",
-      "command": "escript",
-      "args": [
-        "_build/default/bin/teinum_tictactoe"
-      ]
+      "command": "./run_server.sh",
+      "env": {
+        "TTT_SERVER": "erlang"
+      }
     }
   }
 }

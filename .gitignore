@@ -1,3 +1,7 @@
 _build/
 *.beam
 erl_crash.dump
+
+# Elixir
+deps/
+elixir/teinum_tictactoe_ex

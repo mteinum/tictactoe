@@ -2,11 +2,33 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Layout
+
+The repo contains two implementations of the same MCP server — one in Erlang, one in Elixir:
+
+```
+erlang/          # Erlang implementation (rebar3 + thoas)
+elixir/          # Elixir implementation (mix + jason)
+run_server.sh    # Launcher script — picks implementation via TTT_SERVER env var
+.mcp.json        # MCP config — uses run_server.sh
+```
+
 ## Build
 
 ```bash
-rebar3 escriptize          # Build the escript binary → _build/default/bin/teinum_tictactoe
-rebar3 compile             # Compile without packaging escript
+# Erlang
+cd erlang && rebar3 escriptize    # → erlang/_build/default/bin/teinum_tictactoe
+
+# Elixir
+cd elixir && mix deps.get && mix escript.build   # → elixir/teinum_tictactoe_ex
+```
+
+## Choosing the Server
+
+Set `TTT_SERVER` in `.mcp.json` (or as an env var) to `erlang` (default) or `elixir`:
+
+```json
+{ "env": { "TTT_SERVER": "elixir" } }
 ```
 
 ## Test
@@ -14,19 +36,22 @@ rebar3 compile             # Compile without packaging escript
 No test framework is configured. Manual testing via piping JSON-RPC messages:
 
 ```bash
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | _build/default/bin/teinum_tictactoe 2>/dev/null
+# Erlang
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | escript erlang/_build/default/bin/teinum_tictactoe 2>/dev/null
+
+# Elixir
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' | ./elixir/teinum_tictactoe_ex 2>/dev/null
 ```
 
 ## Architecture
 
 This is an MCP (Model Context Protocol) server implementing a Tic Tac Toe game. It communicates over stdio using newline-delimited JSON-RPC 2.0.
 
-**Message flow:** stdin → `ttt_stdio` (line reader) → `ttt_mcp` (JSON-RPC dispatch) → `ttt_tools` (tool execution) → `ttt_game` (game state) → response back through the chain to stdout.
+**Message flow:** stdin → stdio reader → JSON-RPC dispatch → tool execution → game state → response back through the chain to stdout.
 
 Key design decisions:
-- **Escript, not OTP release**: Runs as an escript with `-noshell`. The `ttt_game` gen_server is started directly in `main/1` (not via the application supervisor) because `application:ensure_all_started` doesn't work reliably in escript mode.
-- **JSON via thoas**: Pure Erlang JSON library (v1.2.1). All map keys are binaries.
-- **stdout is sacred**: All logging goes to stderr. The OTP logger is redirected to `standard_error` at startup. Never write diagnostics to stdout.
+- **Escript, not OTP release**: Both implementations run as escripts. The game GenServer is started directly in the main entry point.
+- **stdout is sacred**: All logging goes to stderr. Never write diagnostics to stdout.
 - **MCP protocol version**: `2025-03-26`. Notifications (no `"id"` field) get `noreply`; requests get `{reply, IoData}`.
 
 ## Player Agents
