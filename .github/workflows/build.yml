@@ -22,7 +22,7 @@ jobs:
           rebar3-version: "3.24"
 
       - name: Restore rebar3 cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: erlang/_build
           key: erlang-build-${{ hashFiles('erlang/rebar.lock') }}
@@ -55,7 +55,7 @@ jobs:
           elixir-version: "1.19"
 
       - name: Restore Mix cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             elixir/deps
